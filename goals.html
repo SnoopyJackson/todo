@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goals</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Martian+Mono:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="goals.css">
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Martian Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 120px;
+}
+
+/* ── NAV TABS ── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+}
+
+.tab {
+  background: none;
+  border: none;
+  color: var(--dim);
+  font-family: 'Martian Mono', monospace;
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 18px 24px;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; right: 50%;
+  height: 1px;
+  transition: left 0.25s, right 0.25s;
+}
+
+.tab.active { color: var(--text); }
+.tab[data-id="daily"].active::after    { background: var(--daily);    left: 16px; right: 16px; }
+.tab[data-id="monthly"].active::after  { background: var(--monthly);  left: 16px; right: 16px; }
+.tab[data-id="yearly"].active::after   { background: var(--yearly);   left: 16px; right: 16px; }
+.tab[data-id="longterm"].active::after { background: var(--longterm); left: 16px; right: 16px; }
+.tab[data-id="habits"].active::after   { background: var(--habits);   left: 16px; right: 16px; }
+
+/* ── PANELS ── */
+.panel {
+  display: none;
+  width: 100%;
+  max-width: 560px;
+  padding: 48px 24px 0;
+  animation: fadeUp 0.35s ease both;
+}
+.panel.active { display: block; }
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(10px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── HEADER ── */
+.panel-header {
+  margin-bottom: 40px;
+}
+
+.horizon-label {
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+[data-id="daily"]    .horizon-label { color: var(--daily); }
+[data-id="monthly"]  .horizon-label { color: var(--monthly); }
+[data-id="yearly"]   .horizon-label { color: var(--yearly); }
+[data-id="longterm"] .horizon-label { color: var(--longterm); }
+[data-id="habits"]   .horizon-label { color: var(--habits); }
+
+.panel-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(2.2rem, 9vw, 3rem);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.panel-title em {
+  font-style: italic;
+  font-weight: 300;
+}
+
+.panel-meta {
+  margin-top: 12px;
+  font-size: 9px;
+  font-weight: 200;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+}
+
+/* Progress */
+.progress-wrap {
+  margin-top: 20px;
+}
+.progress-track {
+  height: 1px;
+  background: var(--border);
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+}
+[data-id="daily"]    .progress-fill { background: var(--daily); }
+[data-id="monthly"]  .progress-fill { background: var(--monthly); }
+[data-id="yearly"]   .progress-fill { background: var(--yearly); }
+[data-id="longterm"] .progress-fill { background: var(--longterm); }
+[data-id="habits"]   .progress-fill { background: var(--habits); }
+
+.progress-nums {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+}
+
+/* ── INPUT ── */
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 13px 14px;
+  margin-bottom: 2px;
+  transition: border-color 0.2s;
+}
+.add-row:focus-within { border-color: var(--muted); }
+
+.plus {
+  font-size: 13px;
+  flex-shrink: 0;
+  transition: color 0.2s;
+  color: var(--dim);
+}
+
+[data-id="daily"]:focus-within    .plus { color: var(--daily); }
+[data-id="monthly"]:focus-within  .plus { color: var(--monthly); }
+[data-id="yearly"]:focus-within   .plus { color: var(--yearly); }
+[data-id="longterm"]:focus-within .plus { color: var(--longterm); }
+[data-id="habits"]:focus-within   .plus { color: var(--habits); }
+
+.add-row input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  font-family: 'Martian Mono', monospace;
+  font-size: 12px;
+  font-weight: 200;
+  color: var(--text);
+  letter-spacing: 0.03em;
+}
+
+.add-row input::placeholder { color: var(--muted); }
+
+.enter-hint {
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+
+/* ── TASK LIST ── */
+ul.task-list {
+  list-style: none;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--surface);
+  transition: background 0.15s;
+  animation: slideIn 0.22s ease both;
+}
+.task-item:hover { background: #151515; }
+.task-item:hover .del { opacity: 1; }
+
+@keyframes slideIn {
+  from { opacity:0; transform: translateX(-5px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+.task-item.done { opacity: 0.38; }
+
+.check-box {
+  width: 14px; height: 14px;
+  border: 1px solid var(--muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+[data-id="daily"]    .task-item.done .check-box { background: var(--daily);    border-color: var(--daily); }
+[data-id="monthly"]  .task-item.done .check-box { background: var(--monthly);  border-color: var(--monthly); }
+[data-id="yearly"]   .task-item.done .check-box { background: var(--yearly);   border-color: var(--yearly); }
+[data-id="longterm"] .task-item.done .check-box { background: var(--longterm); border-color: var(--longterm); }
+[data-id="habits"]   .task-item.done .check-box { background: var(--habits);   border-color: var(--habits); }
+
+.check-box svg { opacity: 0; transition: opacity 0.12s; width: 7px; height: 7px; }
+.task-item.done .check-box svg { opacity: 1; }
+
+.task-label {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 200;
+  letter-spacing: 0.03em;
+  line-height: 1.55;
+  color: var(--text);
+  cursor: pointer;
+  word-break: break-word;
+  transition: color 0.2s;
+}
+.task-item.done .task-label {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+  color: var(--dim);
+}
+
+.del {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: var(--dim);
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.15s, color 0.15s;
+  padding: 0 1px;
+  flex-shrink: 0;
+  line-height: 1;
+  margin-top: 1px;
+}
+.del:hover { color: #d07070; }
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 44px 0 24px;
+  color: var(--dim);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+.empty-glyph {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem;
+  opacity: 0.2;
+  margin-bottom: 10px;
+}
+
+/* ── HABITS SPECIFIC ── */
+.habit-item {
+  border: 1px solid var(--border);
+  border-top: none;
+  background: var(--surface);
+  animation: slideIn 0.22s ease both;
+  transition: background 0.15s;
+}
+.habit-item:hover { background: #151515; }
+.habit-item:hover .del { opacity: 1; }
+
+.habit-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px 10px;
+}
+
+.habit-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 200;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.streak-badge {
+  font-size: 9px;
+  font-weight: 300;
+  color: var(--habits);
+  letter-spacing: 0.1em;
+  flex-shrink: 0;
+}
+
+.habit-grid {
+  display: flex;
+  gap: 3px;
+  padding: 0 14px 13px 40px;
+  flex-wrap: wrap;
+}
+
+.day-dot {
+  width: 10px; height: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+.day-dot.checked {
+  background: var(--habits);
+  border-color: var(--habits);
+}
+.day-dot:hover { border-color: var(--habits); }
+
+.habit-grid-label {
+  font-size: 8px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  padding: 0 14px 6px 40px;
+}
+
+/* ── MOBILE ── */
+@media(max-width:480px) {
+  .tab { padding: 16px 14px; font-size: 8px; }
+  .panel { padding: 36px 16px 0; }
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <button class="tab active" data-id="daily">Daily</button>
+  <button class="tab" data-id="monthly">Monthly</button>
+  <button class="tab" data-id="yearly">Yearly</button>
+  <button class="tab" data-id="longterm">Long‑term</button>
+  <button class="tab" data-id="habits">Habits</button>
+</nav>
+
+<!-- DAILY -->
+<div class="panel active" id="panel-daily" data-id="daily">
+  <div class="panel-header">
+    <div class="horizon-label">Daily</div>
+    <div class="panel-title">Today's<br><em>focus.</em></div>
+    <div class="panel-meta" id="meta-daily"></div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="pf-daily"></div></div>
+      <div class="progress-nums"><span id="ps-daily">0 done</span><span id="pp-daily">0%</span></div>
+    </div>
+  </div>
+  <div class="add-row" data-id="daily">
+    <span class="plus">+</span>
+    <input type="text" placeholder="add today's task…" autocomplete="off" data-list="daily">
+    <span class="enter-hint">↵</span>
+  </div>
+  <ul class="task-list" id="list-daily"></ul>
+  <div class="empty" id="empty-daily"><div class="empty-glyph">◇</div>nothing yet</div>
+</div>
+
+<!-- MONTHLY -->
+<div class="panel" id="panel-monthly" data-id="monthly">
+  <div class="panel-header">
+    <div class="horizon-label">Monthly</div>
+    <div class="panel-title">This month's<br><em>goals.</em></div>
+    <div class="panel-meta" id="meta-monthly"></div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="pf-monthly"></div></div>
+      <div class="progress-nums"><span id="ps-monthly">0 done</span><span id="pp-monthly">0%</span></div>
+    </div>
+  </div>
+  <div class="add-row" data-id="monthly">
+    <span class="plus">+</span>
+    <input type="text" placeholder="add a monthly goal…" autocomplete="off" data-list="monthly">
+    <span class="enter-hint">↵</span>
+  </div>
+  <ul class="task-list" id="list-monthly"></ul>
+  <div class="empty" id="empty-monthly"><div class="empty-glyph">◇</div>nothing yet</div>
+</div>
+
+<!-- YEARLY -->
+<div class="panel" id="panel-yearly" data-id="yearly">
+  <div class="panel-header">
+    <div class="horizon-label">Yearly</div>
+    <div class="panel-title">This year's<br><em>ambitions.</em></div>
+    <div class="panel-meta" id="meta-yearly"></div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="pf-yearly"></div></div>
+      <div class="progress-nums"><span id="ps-yearly">0 done</span><span id="pp-yearly">0%</span></div>
+    </div>
+  </div>
+  <div class="add-row" data-id="yearly">
+    <span class="plus">+</span>
+    <input type="text" placeholder="add a yearly goal…" autocomplete="off" data-list="yearly">
+    <span class="enter-hint">↵</span>
+  </div>
+  <ul class="task-list" id="list-yearly"></ul>
+  <div class="empty" id="empty-yearly"><div class="empty-glyph">◇</div>nothing yet</div>
+</div>
+
+<!-- LONG-TERM -->
+<div class="panel" id="panel-longterm" data-id="longterm">
+  <div class="panel-header">
+    <div class="horizon-label">Long‑term</div>
+    <div class="panel-title">Life's<br><em>vision.</em></div>
+    <div class="panel-meta" id="meta-longterm"></div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="pf-longterm"></div></div>
+      <div class="progress-nums"><span id="ps-longterm">0 done</span><span id="pp-longterm">0%</span></div>
+    </div>
+  </div>
+  <div class="add-row" data-id="longterm">
+    <span class="plus">+</span>
+    <input type="text" placeholder="add a life goal…" autocomplete="off" data-list="longterm">
+    <span class="enter-hint">↵</span>
+  </div>
+  <ul class="task-list" id="list-longterm"></ul>
+  <div class="empty" id="empty-longterm"><div class="empty-glyph">◇</div>nothing yet</div>
+</div>
+
+<!-- HABITS -->
+<div class="panel" id="panel-habits" data-id="habits">
+  <div class="panel-header">
+    <div class="horizon-label">Atomic Habits</div>
+    <div class="panel-title">Daily<br><em>rituals.</em></div>
+    <div class="panel-meta" id="meta-habits">TRACK · STREAK · COMPOUND</div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-fill" id="pf-habits"></div></div>
+      <div class="progress-nums"><span id="ps-habits">0 done today</span><span id="pp-habits">0%</span></div>
+    </div>
+  </div>
+  <div class="add-row" data-id="habits">
+    <span class="plus">+</span>
+    <input type="text" placeholder="add a habit…" autocomplete="off" data-list="habits">
+    <span class="enter-hint">↵</span>
+  </div>
+  <ul class="task-list" id="list-habits"></ul>
+  <div class="empty" id="empty-habits"><div class="empty-glyph">◇</div>nothing yet</div>
+</div>
+
+<script>
+const now = new Date();
+const todayKey = now.toISOString().slice(0,10);
+
+// Storage keys — daily resets each day, monthly each month, yearly each year, longterm persists
+const keys = {
+  daily:    'goals_daily_'    + now.toISOString().slice(0,10),
+  monthly:  'goals_monthly_'  + now.toISOString().slice(0,7),
+  yearly:   'goals_yearly_'   + now.getFullYear(),
+  longterm: 'goals_longterm',
+  habits:   'goals_habits',
+};
+
+// Meta labels
+const metas = {
+  daily:    now.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'}).toUpperCase(),
+  monthly:  now.toLocaleDateString('en-US', {month:'long', year:'numeric'}).toUpperCase(),
+  yearly:   now.getFullYear().toString(),
+  longterm: 'ONGOING · NO DEADLINE',
+};
+
+Object.entries(metas).forEach(([id, val]) => {
+  const el = document.getElementById('meta-' + id);
+  if (el) el.textContent = val;
+});
+
+// State
+const state = {};
+['daily','monthly','yearly','longterm'].forEach(id => {
+  state[id] = JSON.parse(localStorage.getItem(keys[id]) || '[]');
+});
+
+// Habits state: [{id, name, log: {date: bool}}]
+state.habits = JSON.parse(localStorage.getItem(keys.habits) || '[]');
+
+function save(id) { localStorage.setItem(keys[id], JSON.stringify(state[id])); }
+
+function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function render(id) {
+  const list  = document.getElementById('list-' + id);
+  const empty = document.getElementById('empty-' + id);
+  const tasks = state[id];
+  list.innerHTML = '';
+
+  const total = tasks.length, done = tasks.filter(t=>t.done).length;
+  const pct   = total === 0 ? 0 : Math.round(done/total*100);
+
+  empty.style.display = total === 0 ? 'block' : 'none';
+  document.getElementById('pf-' + id).style.width = pct + '%';
+  document.getElementById('ps-' + id).textContent = `${done} of ${total} done`;
+  document.getElementById('pp-' + id).textContent = pct + '%';
+
+  tasks.forEach((task, i) => {
+    const li = document.createElement('li');
+    li.className = 'task-item' + (task.done ? ' done' : '');
+    li.innerHTML = `
+      <div class="check-box">
+        <svg viewBox="0 0 10 8" fill="none" stroke="var(--bg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1,4 4,7 9,1"/>
+        </svg>
+      </div>
+      <span class="task-label">${esc(task.text)}</span>
+      <button class="del" title="Delete">×</button>
+    `;
+    li.querySelector('.check-box').addEventListener('click', () => toggle(id, i));
+    li.querySelector('.task-label').addEventListener('click', () => toggle(id, i));
+    li.querySelector('.del').addEventListener('click', () => remove(id, i));
+    list.appendChild(li);
+  });
+}
+
+function toggle(id, i) {
+  state[id][i].done = !state[id][i].done;
+  save(id); render(id);
+}
+
+function remove(id, i) {
+  state[id].splice(i, 1);
+  save(id); render(id);
+}
+
+// Inputs
+document.querySelectorAll('.add-row input').forEach(input => {
+  input.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const val = e.target.value.trim();
+    if (!val) return;
+    const id = e.target.dataset.list;
+    if (id === 'habits') {
+      state.habits.push({ id: Date.now().toString(), name: val, log: {} });
+      localStorage.setItem(keys.habits, JSON.stringify(state.habits));
+      renderHabits();
+    } else {
+      state[id].push({ text: val, done: false });
+      e.target.value = '';
+      save(id); render(id);
+    }
+    e.target.value = '';
+  });
+});
+
+// Streak calculator
+function calcStreak(log) {
+  let streak = 0;
+  const d = new Date(now);
+  while (true) {
+    const k = d.toISOString().slice(0,10);
+    if (log[k]) { streak++; d.setDate(d.getDate()-1); }
+    else break;
+  }
+  return streak;
+}
+
+// Last 28 days keys
+function last28() {
+  const days = [];
+  for (let i = 27; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    days.push(d.toISOString().slice(0,10));
+  }
+  return days;
+}
+
+function renderHabits() {
+  const list  = document.getElementById('list-habits');
+  const empty = document.getElementById('empty-habits');
+  const habits = state.habits;
+  list.innerHTML = '';
+
+  const total = habits.length;
+  const doneToday = habits.filter(h => h.log[todayKey]).length;
+  const pct = total === 0 ? 0 : Math.round(doneToday/total*100);
+
+  empty.style.display = total === 0 ? 'block' : 'none';
+  document.getElementById('pf-habits').style.width = pct + '%';
+  document.getElementById('ps-habits').textContent = `${doneToday} of ${total} done today`;
+  document.getElementById('pp-habits').textContent = pct + '%';
+
+  const days = last28();
+
+  habits.forEach((habit, i) => {
+    const streak = calcStreak(habit.log);
+    const li = document.createElement('li');
+    li.className = 'habit-item';
+
+    const checkedToday = !!habit.log[todayKey];
+
+    li.innerHTML = `
+      <div class="habit-top">
+        <div class="check-box ${checkedToday ? 'checked-h' : ''}">
+          <svg viewBox="0 0 10 8" fill="none" stroke="var(--bg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1,4 4,7 9,1"/>
+          </svg>
+        </div>
+        <span class="habit-name">${esc(habit.name)}</span>
+        <span class="streak-badge">${streak > 0 ? '🔥 ' + streak + 'd' : ''}</span>
+        <button class="del" title="Delete">×</button>
+      </div>
+      <div class="habit-grid-label">last 28 days</div>
+      <div class="habit-grid" id="hgrid-${i}"></div>
+    `;
+
+    // Style today's check-box like others
+    const cb = li.querySelector('.check-box');
+    if (checkedToday) {
+      cb.style.background = 'var(--habits)';
+      cb.style.borderColor = 'var(--habits)';
+      cb.querySelector('svg').style.opacity = '1';
+    } else {
+      cb.style.borderColor = 'var(--muted)';
+    }
+
+    cb.addEventListener('click', () => {
+      habit.log[todayKey] = !habit.log[todayKey];
+      localStorage.setItem(keys.habits, JSON.stringify(state.habits));
+      renderHabits();
+    });
+
+    li.querySelector('.del').addEventListener('click', () => {
+      state.habits.splice(i, 1);
+      localStorage.setItem(keys.habits, JSON.stringify(state.habits));
+      renderHabits();
+    });
+
+    list.appendChild(li);
+
+    // Build dot grid
+    const grid = document.getElementById('hgrid-' + i);
+    days.forEach(day => {
+      const dot = document.createElement('div');
+      dot.className = 'day-dot' + (habit.log[day] ? ' checked' : '');
+      dot.title = day;
+      dot.addEventListener('click', () => {
+        habit.log[day] = !habit.log[day];
+        localStorage.setItem(keys.habits, JSON.stringify(state.habits));
+        renderHabits();
+      });
+      grid.appendChild(dot);
+    });
+  });
+}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.id).classList.add('active');
+  });
+});
+
+// Init
+['daily','monthly','yearly','longterm'].forEach(render);
+renderHabits();
+</script>
+</body>
+</html>
