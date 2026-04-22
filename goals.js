@@ -50,6 +50,8 @@ function render(id) {
   document.getElementById('ps-' + id).textContent = `${done} of ${total} done`;
   document.getElementById('pp-' + id).textContent = pct + '%';
 
+  renderHistory(id);
+
   tasks.forEach((task, i) => {
     const li = document.createElement('li');
     li.className = 'task-item' + (task.done ? ' done' : '');
@@ -66,6 +68,79 @@ function render(id) {
     li.querySelector('.task-label').addEventListener('click', () => toggle(id, i));
     li.querySelector('.del').addEventListener('click', () => remove(id, i));
     list.appendChild(li);
+  });
+}
+
+function formatPeriod(id, period) {
+  if (id === 'daily') {
+    const d = new Date(period + 'T00:00:00');
+    return d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}).toUpperCase();
+  }
+  if (id === 'monthly') {
+    const d = new Date(period + '-01T00:00:00');
+    return d.toLocaleDateString('en-US', {month:'long', year:'numeric'}).toUpperCase();
+  }
+  return period;
+}
+
+function renderHistory(id) {
+  const histEl = document.getElementById('history-' + id);
+  if (!histEl) return;
+
+  if (id === 'longterm') {
+    const done = state.longterm.filter(t => t.done);
+    histEl.innerHTML = '';
+    if (done.length === 0) { histEl.style.display = 'none'; return; }
+    histEl.style.display = '';
+    const title = document.createElement('div');
+    title.className = 'history-title';
+    title.textContent = 'completed';
+    histEl.appendChild(title);
+    done.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'history-item done';
+      row.textContent = t.text;
+      histEl.appendChild(row);
+    });
+    return;
+  }
+
+  const prefix = 'goals_' + id + '_';
+  const currentKey = keys[id];
+  const histKeys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith(prefix) && k !== currentKey) histKeys.push(k);
+  }
+  histKeys.sort().reverse();
+  const limited = histKeys.slice(0, 7);
+
+  histEl.innerHTML = '';
+  if (limited.length === 0) { histEl.style.display = 'none'; return; }
+
+  histEl.style.display = '';
+  const title = document.createElement('div');
+  title.className = 'history-title';
+  title.textContent = 'history';
+  histEl.appendChild(title);
+
+  limited.forEach(k => {
+    const period = k.replace(prefix, '');
+    const tasks = JSON.parse(localStorage.getItem(k) || '[]');
+    if (tasks.length === 0) return;
+    const group = document.createElement('div');
+    group.className = 'history-group';
+    const label = document.createElement('div');
+    label.className = 'history-period';
+    label.textContent = formatPeriod(id, period);
+    group.appendChild(label);
+    tasks.forEach(t => {
+      const row = document.createElement('div');
+      row.className = 'history-item' + (t.done ? ' done' : '');
+      row.textContent = t.text;
+      group.appendChild(row);
+    });
+    histEl.appendChild(group);
   });
 }
 

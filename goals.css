@@ -360,6 +360,59 @@ ul.task-list {
   padding: 0 14px 6px 40px;
 }
 
+/* ── HISTORY ── */
+.history-section {
+  display: none;
+  margin-top: 36px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+.history-title {
+  font-size: 9px;
+  font-weight: 300;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 18px;
+}
+
+.history-group {
+  margin-bottom: 18px;
+}
+
+.history-period {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  color: var(--sub);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.history-item {
+  font-size: 11px;
+  font-weight: 200;
+  color: var(--dim);
+  padding: 2px 0 2px 12px;
+  position: relative;
+  letter-spacing: 0.02em;
+  line-height: 1.55;
+}
+
+.history-item::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: var(--muted);
+}
+
+.history-item.done {
+  text-decoration: line-through;
+  text-decoration-color: var(--muted);
+  opacity: 0.45;
+}
+
 /* ── MOBILE ── */
 @media(max-width:480px) {
   .tab { padding: 16px 14px; font-size: 8px; }
